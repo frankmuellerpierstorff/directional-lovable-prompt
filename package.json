@@ -1,0 +1,22 @@
+{
+  "name": "directional-lovable-prompt",
+  "version": "1.0.0",
+  "description": "Generate Awwwards-level Lovable.dev website prompts from a brand idea. Two-prompt strategy: Foundation + Upgrade.",
+  "keywords": ["lovable", "awwwards", "website", "prompt", "brand", "ai", "mcp", "claude"],
+  "author": "Frank Müller-Pierstorff <frank@directional.dev>",
+  "license": "MIT",
+  "homepage": "https://directional.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frankmuellerpierstorff/directional-lovable-prompt"
+  },
+  "type": "module",
+  "bin": {
+    "lovable-prompt": "./cli.js"
+  },
+  "main": "index.js",
+  "files": ["index.js", "cli.js", "prompts.js", "README.md"],
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}
