@@ -117,7 +117,7 @@ Oversized "GREENFLOW" wordmark (clamp(12rem, 25vw, 25rem)) parallaxes up...
 
 ## How It Works
 
-The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The Foundation prompt is Claude-generated with real copy. The Upgrade prompt is a battle-tested template — the same one that produced [this GreenFlow redesign](https://directional.dev).
+The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The Foundation prompt is Claude-generated with real copy. The Upgrade prompt is a battle-tested template — the same one that produced [this GreenFlow redesign](https://greenflow-design.lovable.app).
 
 ## Credits
 
