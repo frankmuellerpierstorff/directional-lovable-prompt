@@ -112,7 +112,7 @@ GreenFlow transforms building energy data into actionable intelligence...
 
 ## How It Works
 
-The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The content brief is Claude-generated with real copy. Art direction, motion choreography, and constraints are battle-tested templates — the same ones that produced [this GreenFlow redesign](https://greenflow-design.lovable.app).
+The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The content brief is Claude-generated with real copy. Art direction, motion choreography, and constraints are battle-tested templates — the same ones that produced [this GreenFlow redesign](https://greenflow-by-directional.lovable.app).
 
 ## Credits
 
