@@ -8,7 +8,7 @@
  *   npx directional-lovable-prompt "A SaaS for renewable energy monitoring" --primary "#8B6F47"
  */
 
-import { generateWebsitePrompts } from "./index.js";
+import { generateWebsitePrompt } from "./index.js";
 
 const args = process.argv.slice(2);
 const description = args.filter(a => !a.startsWith("--")).join(" ");
@@ -25,8 +25,9 @@ if (!description) {
     --primary "#hex"     Primary brand color
     --headline "Font"    Headline font (Google Fonts)
     --body "Font"        Body font (Google Fonts)
-    --logo "url"         Logo URL
+    --logo "url"         Logo URL (SVG preferred)
     --hero "url"         Hero image URL
+    --secondary "url"    Secondary image URL
 
   Examples:
     npx directional-lovable-prompt "A meditation app for busy founders"
@@ -46,6 +47,7 @@ for (let i = 0; i < args.length; i++) {
   if (args[i] === "--body" && args[i + 1]) overrides.bodyFont = args[++i];
   if (args[i] === "--logo" && args[i + 1]) overrides.logoUrl = args[++i];
   if (args[i] === "--hero" && args[i + 1]) overrides.heroImageUrl = args[++i];
+  if (args[i] === "--secondary" && args[i + 1]) overrides.secondaryImageUrl = args[++i];
 }
 
 if (!process.env.ANTHROPIC_API_KEY) {
@@ -57,19 +59,14 @@ if (!process.env.ANTHROPIC_API_KEY) {
 console.log("\n🎨 Generating brand from your description...\n");
 
 try {
-  const { brand, foundation, upgrade } = await generateWebsitePrompts(description, overrides);
+  const { brand, prompt } = await generateWebsitePrompt(description, overrides);
 
   console.log(`✅ Brand: ${brand.name}\n`);
   console.log("═".repeat(60));
-  console.log("\n📋 PROMPT 1: FOUNDATION");
-  console.log("Paste this first into Lovable:\n");
+  console.log("\n📋 MASTER PROMPT");
+  console.log("Paste this into Lovable:\n");
   console.log("─".repeat(60));
-  console.log(foundation);
-  console.log("─".repeat(60));
-  console.log("\n\n📋 PROMPT 2: UPGRADE");
-  console.log("After the foundation is built, paste this to transform it:\n");
-  console.log("─".repeat(60));
-  console.log(upgrade);
+  console.log(prompt);
   console.log("─".repeat(60));
   console.log("\n\n🎯 Brand Summary:");
   console.log(`   Name: ${brand.name}`);

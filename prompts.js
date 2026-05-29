@@ -1,105 +1,23 @@
 /**
  * Prompt templates for Lovable website generation.
- * Two-prompt strategy: Foundation (structure + content) → Upgrade (motion + materials).
+ * Single master prompt strategy: Claude generates content, everything else is template.
  */
 
-export const FOUNDATION_SYSTEM = `You generate Lovable.dev website prompts. Write a solid, well-structured single-page website prompt with real copy, exact design tokens, and clear section-by-section instructions.
+export const CONTENT_SYSTEM = `You write website content briefs. From the brand context, generate:
 
-RULES:
-- Write ALL copy yourself from the brand context. Real headlines, subtext, CTAs. No placeholders ever.
-- Specify exact hex colors, font families, spacing, border-radius as Tailwind classes.
-- Logo SVGs may have square viewBox with padding baked in — specify height: 48-60px with object-fit: contain.
-- One section at a time, top to bottom. Conversational but precise.
-- Use generous whitespace. Premium, not cramped SaaS.
-- Include a "Brand hosted by Directional" text with link to https://directional.dev at the very bottom of the footer — subtle, minimal, quality signal.`;
+1. A one-paragraph OVERVIEW describing the brand and the aesthetic direction for the website.
+2. CONTENT for each section — real headlines, real body copy, real CTAs. No placeholders.
 
-export function buildFoundationUserPrompt(brand) {
-  const {
-    name, description, purpose, positioning, tone, narrative,
-    audience, values, mission, painsGains,
-    primaryColor, allColors, darkColor, lightColor,
-    headlineFont, bodyFont,
-    logoUrl, heroImageUrl, secondaryImageUrl,
-    materialLanguage,
-  } = brand;
+Sections to write copy for:
+- NAVBAR: 4 nav link labels + 1 CTA label
+- HERO: overline, headline, subline, primary CTA, secondary CTA
+- METRICS: 4 metrics (number + label each), derived from brand context
+- FEATURES: 3 feature cards (headline + body each)
+- STORY: narrative paragraphs (2-3 paragraphs telling the brand story)
+- CTA: headline, body, button text
+- FOOTER: short tagline, 4 column labels
 
-  return `Build a modern, responsive single-page website for ${name}. The aesthetic is ${materialLanguage || "clean, modern, premium"}. Write ALL copy yourself based on this brand context:
-
-${description ? `What they do: ${description}` : ""}
-${purpose ? `Purpose: ${purpose}` : ""}
-${positioning ? `Positioning: ${positioning}` : ""}
-${tone ? `Tone: ${tone}` : ""}
-${narrative ? `Narrative: ${narrative}` : ""}
-${audience ? `Audience: ${audience}` : ""}
-${values ? `Values: ${values}` : ""}
-${painsGains ? `Pains & Gains: ${painsGains}` : ""}
-${mission ? `Mission: ${mission}` : ""}
-
-Design Tokens:
-- Primary color: ${primaryColor || "#030303"}
-- All colors: ${allColors || primaryColor || "#030303, #FCFBF8"}
-- Dominant dark: ${darkColor || "#1A1714"}, Dominant light: ${lightColor || "#F2EEE8"} (paper tone, not pure white)
-- Headline font: font-family: '${headlineFont || "Inter"}', sans-serif
-- Body font: font-family: '${bodyFont || "Inter"}', sans-serif
-- Border radius: 12px (rounded-xl)
-- Button: bg-[${primaryColor || "#030303"}] text-white rounded-xl px-6 py-3 font-medium
-
-Assets:
-${logoUrl ? `Logo: ${logoUrl} (SVG with square viewBox — use height: 48-60px, object-fit: contain)` : `Text logo: "${name}" in headline font, 20px bold, color ${primaryColor || "#030303"}`}
-${heroImageUrl ? `Hero image: ${heroImageUrl}` : "No hero image — use brand primary gradient"}
-${secondaryImageUrl ? `Secondary image: ${secondaryImageUrl}` : ""}
-
-Sections:
-1. NAVBAR — Sticky, backdrop-blur. Logo left, nav links center (4 links from brand context), CTA right.
-2. HERO (100vh min) — Split layout or full-bleed image. Bold headline from positioning, subheadline from purpose, primary CTA. ${heroImageUrl ? "Use hero image." : "Use gradient background."}
-3. METRICS — Full width, subtle background ${lightColor || "#F2EEE8"}. 4 key numbers/stats derived from the brand.
-4. FEATURES — 3 cards in grid. Derive features from values/mission. Each: icon area, headline, description. Cards: bg-white, rounded-2xl, p-8, border 1px solid, hover shadow transition.
-5. STORY — Two-column. Text left telling brand narrative, ${secondaryImageUrl ? "image right" : "brand color block right"}.
-6. CTA — Full-width, gradient ${primaryColor || "#030303"} to ${darkColor || "#1A1714"}. Headline + subtext + button in white.
-7. FOOTER — Dark background ${darkColor || "#1A1714"}. Logo, nav links, contact, copyright. At the very bottom: "Brand hosted by Directional" linking to https://directional.dev.
-
-Interaction: smooth scroll, anchor links, subtle card hover lift. Feel solid, trustworthy, premium — warmth and weight.`;
-}
-
-export function buildUpgradePrompt(brand) {
-  const {
-    name,
-    primaryColor = "#030303",
-    darkColor = "#1A1714",
-    lightColor = "#F2EEE8",
-    headlineFont = "Inter",
-    bodyFont = "Inter",
-    materialLanguage = "layered glass, warm shadows",
-  } = brand;
-
-  return `Redesign the entire ${name} landing page to feel absolutely cutting edge. Awwwards SOTD level.
-
-Use editorial typography (${headlineFont} for display headlines with variable weight + italic accents, ${bodyFont} for body). NOT standard sans-serif sizing — use clamp(3rem, 10vw, 10rem) for hero headlines.
-
-Replace all white cards and flat backgrounds with layered glass materials: backdrop-blur-2xl, bg-white/[0.04], hairline borders, and a subtle 3% SVG grain overlay across the entire page. Warm-toned shadows using ${primaryColor} at 12% alpha. No flat white cards with shadow-md ever.
-
-Implement a full motion stack: Framer Motion for component reveals and magnetic buttons, GSAP ScrollTrigger for pinning/scrubbed scroll sections, and Lenis for buttery smooth global scrolling. Add a custom blended cursor (mix-blend-difference) that scales on hover targets, hidden on touch devices.
-
-Key motion choreography:
-- Hero: word-by-word mask reveal with 80ms stagger, easing [0.16,1,0.3,1], background image scales 1.15→1 with 0.3× parallax
-- Metrics: infinite horizontal marquee that pauses on hover, ${headlineFont} numerals at clamp(4rem, 12vw, 8rem)
-- Features: sticky scroll — left text pins while right visuals scrub through 3 frames with scale-in reveals
-- Story: pinned image right, text paragraphs left cross-fade on scroll
-- CTA: animated SVG mesh gradient (feTurbulence) behind glass button with ${primaryColor} inner glow
-- Footer: oversized "${name}" wordmark (clamp(12rem, 25vw, 25rem)) that parallaxes up, opacity 10%
-
-Grid: 12-column CSS Grid, asymmetrical placements, no global max-w-7xl container. Images must bleed edge-to-edge to viewport. Full-bleed sections only.
-
-Navbar becomes a floating glass-pill, centered, 24px from top, shrinks on scroll. All CTAs get magnetic hover (80px radius, spring back).
-
-Color dominance shift: ${darkColor} as primary dark, ${lightColor} as paper tone (never pure white). Single brand accent ${primaryColor} per section, not everywhere.
-
-${materialLanguage ? `Material language: ${materialLanguage}.` : ""}
-
-Generate cinematic AI images: one for hero (premium, 1920px wide, warm tones), three story frames for cross-fade. All matching the brand palette.
-
-No 3D/WebGL, no video backgrounds. Every element must respect prefers-reduced-motion. The result should feel like a top-10 Awwwards editorial site.`;
-}
+Output as clean markdown with ## headers per section. Write in the brand's tone. Be specific and compelling, not generic.`;
 
 export const BRAND_GEN_SYSTEM = `You are a brand strategist. From a brief product/company description, generate a complete brand foundation. Be specific, opinionated, and professional. Return valid JSON only.
 
@@ -123,3 +41,189 @@ Schema:
   "lightColor": "#hexcode (paper tone, not pure white)",
   "materialLanguage": "e.g. layered glass, warm shadows, grain overlay"
 }`;
+
+export function buildContentUserPrompt(brand) {
+  const {
+    name, description, purpose, positioning, tone, narrative,
+    audience, values, mission, materialLanguage,
+  } = brand;
+
+  return `Brand: ${name}
+${description ? `What they do: ${description}` : ""}
+${purpose ? `Purpose: ${purpose}` : ""}
+${positioning ? `Positioning: ${positioning}` : ""}
+${tone ? `Tone: ${tone}` : ""}
+${narrative ? `Narrative: ${narrative}` : ""}
+${audience ? `Audience: ${audience}` : ""}
+${values ? `Values: ${values}` : ""}
+${mission ? `Mission: ${mission}` : ""}
+
+Aesthetic direction: ${materialLanguage || "warm editorial minimalism with layered glass depth"}`;
+}
+
+export function buildMasterPrompt(brand, contentBrief) {
+  const {
+    name,
+    primaryColor = "#030303",
+    darkColor = "#1A1714",
+    lightColor = "#F2EEE8",
+    headlineFont = "Inter",
+    bodyFont = "Inter",
+    logoUrl,
+    heroImageUrl,
+    secondaryImageUrl,
+    allColors = "",
+    materialLanguage = "layered glass, warm shadows",
+  } = brand;
+
+  // Build color table from allColors string or individual colors
+  const colorRows = allColors
+    ? allColors.split(",").map((c, i) => `| Color ${i + 1} | ${c.trim()} | ${i === 0 ? "Primary accent" : i < 3 ? "Feature accent" : "Neutral"} |`).join("\n")
+    : `| --accent-primary | ${primaryColor} | Primary accent |`;
+
+  // Content extraction
+  const overviewMatch = contentBrief.split("##")[1]?.split("##")[0]?.trim();
+  const contentStart = contentBrief.includes("## NAVBAR")
+    ? contentBrief.slice(contentBrief.indexOf("## NAVBAR"))
+    : contentBrief.includes("### NAVBAR")
+      ? contentBrief.slice(contentBrief.indexOf("### NAVBAR"))
+      : contentBrief;
+
+  // Logo instructions
+  const logoBlock = logoUrl
+    ? `- **Logo:** ${logoUrl}
+  - CRITICAL: Download the SVG, compute the bounding box of all <path> elements, set viewBox to those bounds. The original SVG has a square viewBox with padding — without cropping, the logo renders tiny.
+  - Inline the SVG into JSX (NOT <img>). Use fill="currentColor" for color control.
+  - Header: h-8 (mobile) / h-10 (desktop). Footer: h-12.
+  - Render ONCE in header. The logo IS the wordmark — no text span next to it.`
+    : `- **Logo:** Use text logo — "${name}" in ${headlineFont}, bold, ${primaryColor}`;
+
+  const heroBlock = heroImageUrl
+    ? `- **Hero image:** ${heroImageUrl} (use as hero background, do NOT generate a new one)`
+    : `- **Hero image:** Generate one cinematic AI image (1920×1080, warm tones, matching brand palette)`;
+
+  const secondaryBlock = secondaryImageUrl
+    ? `- **Secondary image:** ${secondaryImageUrl} (use for story section)`
+    : "";
+
+  return `# ${name} — Website Prompt (Awwwards-Level Landing Page)
+
+## 1. OVERVIEW
+
+${overviewMatch || contentBrief.slice(0, 500)}
+
+The site must feel like a top-10 Awwwards editorial site: warm, grounded, technically premium. No 3D/WebGL, no video backgrounds. Every element must respect \`prefers-reduced-motion\`.
+
+---
+
+## 2. CONTENT — SECTIONS & COPY
+
+${contentStart}
+
+---
+
+## 3. ART DIRECTION
+
+### Typography
+- **Display/Headlines:** ${headlineFont} (variable weight, italic accents)
+- **Body/UI:** ${bodyFont}
+- **Font loading:** Check Google Fonts first. If not available (e.g. Geist), install via \`@fontsource/\` npm packages.
+- **Scale:**
+  - Hero headline: \`clamp(4rem, 11vw, 11rem)\`
+  - Section headlines: \`clamp(2.5rem, 6vw, 5rem)\`
+  - Body: \`1.125rem\` (18px), line-height 1.6
+  - Nav/Labels: \`0.875rem\`, uppercase, letter-spacing \`0.08em\`
+
+### Color Palette
+| Token | Value | Role |
+|-------|-------|------|
+${colorRows}
+| \`--bg-dominant\` | \`${darkColor}\` | Primary dark background |
+| \`--bg-paper\` | \`${lightColor}\` | Light section backgrounds |
+
+### Layered Glass System
+- \`backdrop-blur-2xl\` (24px blur)
+- \`bg-white/[0.04]\` (4% white tint)
+- Hairline borders: \`1px solid rgba(255,255,255,0.08)\` on dark, \`rgba(0,0,0,0.06)\` on light
+- Warm shadows: \`0 8px 32px ${primaryColor}1F\` (12% alpha of brand primary)
+
+### Texture
+- 3% SVG grain overlay across all dark sections (static, not animated)
+- No pure white (\`#FFFFFF\`) anywhere — \`${lightColor}\` is the lightest
+- No flat white cards with \`shadow-md\` — depth comes from blur layers, not elevation
+
+---
+
+## 4. MOTION CHOREOGRAPHY
+
+### Stack
+\`framer-motion\` only — no GSAP, no ScrollTrigger. Use \`useScroll\`, \`useTransform\`, \`whileInView\`, and \`stagger\`. CSS \`position: sticky\` for pinning. CSS \`@keyframes\` for marquee.
+
+### Hero
+- Hero image gets a warm-dark overlay: \`${darkColor}\` at 50% opacity — ensures white headline contrast
+- Word-by-word mask reveal on headline using \`staggerChildren: 0.08\`
+- Easing: \`[0.16, 1, 0.3, 1]\`
+- Overline fades in first, then headline words, then subline, then CTAs
+
+### Metrics Marquee
+- Infinite horizontal scroll via CSS \`@keyframes\` (40s duration, linear)
+- Pause on hover (\`animation-play-state: paused\`), fade edges with gradient masks
+
+### Features (Sticky Left + Scroll Right)
+- Left column: \`position: sticky; top: 20vh\` — text pins naturally
+- Right column: cards appear with \`whileInView\` — fade in + slide up, easing \`[0.22, 1, 0.36, 1]\`
+
+### Story Gallery
+- 3 images cross-fading, 5s hold per image, 1s transition
+- Subtle scale: \`1 → 1.05\` during hold
+
+### CTA Mesh Gradient
+- SVG mesh gradient with slow morphing (20s cycle)
+- Colors: brand primary + warm secondary tones
+
+### Footer Wordmark
+- Oversized "${name}" at \`clamp(12rem, 25vw, 25rem)\`, parallax 0.3x, opacity 10%
+
+### Reduced Motion
+- If \`prefers-reduced-motion: reduce\`: all transitions become simple opacity fades (0.2s), no parallax, no infinite marquees, no mesh morphing
+
+---
+
+## 5. BRAND ASSETS
+
+Use these exact URLs — do NOT generate new images for hero or logo.
+
+${logoBlock}
+${heroBlock}
+${secondaryBlock}
+
+For the Story Gallery (3 cross-fading frames):
+- **Frame 1:** Use the Secondary image asset above (do NOT generate a replacement)
+- **Frame 2:** Generate a cinematic AI image — process/craft shot, warm studio light, matching brand palette (1920×1080)
+- **Frame 3:** Generate a cinematic AI image — result/application shot, premium brand in use, matching brand palette (1920×1080)
+
+---
+
+## 6. HARD CONSTRAINTS
+
+- ❌ No 3D/WebGL (Three.js, R3F, etc.)
+- ❌ No video backgrounds
+- ❌ No \`max-w-7xl\` container prisons — let content breathe
+- ❌ No pure white (\`#FFFFFF\`) — use \`${lightColor}\`
+- ❌ No stock "tech blue" accents
+- ❌ No flat white cards with \`shadow-md\` — use layered glass
+- ✅ Single brand accent \`${primaryColor}\` per section
+- ✅ \`prefers-reduced-motion\` fully respected
+- ✅ Every interactive element has hover states
+- ✅ Footer: below the oversized wordmark, a separate line with subtle "Brand hosted by Directional" (14px, muted color) linking to https://directional.dev
+
+---
+
+## 7. TECHNICAL NOTES
+
+- **Styling:** Tailwind CSS with custom design tokens
+- **Animation:** Framer Motion only (\`useScroll\`, \`useTransform\`, \`whileInView\`). CSS \`position: sticky\` for pinning, CSS \`@keyframes\` for marquee. No GSAP.
+- **Fonts:** Load ${headlineFont} and ${bodyFont} via Google Fonts with \`display=swap\`
+- **Images:** Use provided asset URLs, WebP optimization for AI-generated images
+- **Performance:** Lazy load below-fold sections, preload hero image`;
+}

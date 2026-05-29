@@ -1,7 +1,7 @@
 {
   "name": "directional-lovable-prompt",
-  "version": "1.0.0",
-  "description": "Generate Awwwards-level Lovable.dev website prompts from a brand idea. Two-prompt strategy: Foundation + Upgrade.",
+  "version": "2.0.0",
+  "description": "Generate Awwwards-level Lovable.dev website prompts from a brand idea. Single master prompt strategy.",
   "keywords": ["lovable", "awwwards", "website", "prompt", "brand", "ai", "mcp", "claude"],
   "author": "Frank Müller-Pierstorff <frank@directional.dev>",
   "license": "MIT",

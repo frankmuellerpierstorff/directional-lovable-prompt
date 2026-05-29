@@ -1,6 +1,6 @@
 # directional-lovable-prompt
 
-Generate **Awwwards-level** [Lovable.dev](https://lovable.dev) website prompts from a simple brand idea. Two-prompt strategy that turns "I'm building an app for X" into a cutting-edge website.
+Generate **Awwwards-level** [Lovable.dev](https://lovable.dev) website prompts from a simple brand idea. One master prompt that produces cutting-edge websites.
 
 ## The Problem
 
@@ -8,12 +8,12 @@ Every Lovable website looks the same. Default SaaS layouts, Inter font, purple g
 
 ## The Solution
 
-This tool generates **two prompts** that produce websites at Awwwards SOTD level:
+This tool generates a **single master prompt** that produces websites at Awwwards SOTD level:
 
-1. **Foundation Prompt** — Structure, real copy, design tokens, sections. Brand-specific.
-2. **Upgrade Prompt** — Motion choreography (GSAP + Framer + Lenis), glass materials, edge-to-edge layouts, editorial typography.
+- **Section 1-2:** Claude generates real content — headlines, copy, CTAs, metrics — from your brand DNA
+- **Section 3-7:** Battle-tested templates inject your brand tokens into art direction, motion choreography, glass materials, editorial typography, and hard constraints
 
-Paste Prompt 1 → get a solid branded website. Paste Prompt 2 → watch it transform into something cinematic.
+One prompt. Paste it into Lovable. Done.
 
 ## Quick Start
 
@@ -21,30 +21,29 @@ Paste Prompt 1 → get a solid branded website. Paste Prompt 2 → watch it tran
 # Set your API key
 export ANTHROPIC_API_KEY=sk-ant-...
 
-# Generate prompts
+# Generate prompt
 npx directional-lovable-prompt "A meditation app for busy founders"
 ```
 
-That's it. Copy the two prompts into Lovable. Done.
+That's it. Copy the prompt into Lovable.
 
 ## What Happens Under the Hood
 
 1. Your description → Claude generates a **complete brand foundation** (name, positioning, tone, colors, fonts, visual direction)
-2. Brand foundation → **Foundation Prompt** (7 sections with real copy, exact Tailwind tokens, asset references)
-3. Brand tokens → **Upgrade Prompt** (motion stack, glass materials, 12-col edge-to-edge grid, sticky scroll, magnetic CTAs)
+2. Brand foundation → Claude generates **real website copy** (headlines, CTAs, metrics, feature cards, story paragraphs)
+3. Brand tokens + copy → **Master prompt assembled** from battle-tested templates (art direction, motion stack, glass materials, constraints)
 
 ## Programmatic Usage
 
 ```js
-import { generateWebsitePrompts } from 'directional-lovable-prompt';
+import { generateWebsitePrompt } from 'directional-lovable-prompt';
 
-const { brand, foundation, upgrade } = await generateWebsitePrompts(
+const { brand, prompt } = await generateWebsitePrompt(
   "A B2B platform for renewable energy monitoring",
   { primaryColor: "#8B6F47" } // optional overrides
 );
 
-console.log(foundation); // Paste into Lovable first
-console.log(upgrade);    // Paste after foundation is built
+console.log(prompt); // Paste into Lovable
 ```
 
 ## CLI Options
@@ -55,29 +54,21 @@ npx directional-lovable-prompt "Your idea" \
   --headline "Fraunces" \
   --body "Inter Tight" \
   --logo "https://example.com/logo.svg" \
-  --hero "https://example.com/hero.webp"
+  --hero "https://example.com/hero.webp" \
+  --secondary "https://example.com/secondary.webp"
 ```
 
-## The Two-Prompt Strategy
+## What Makes This Different
 
-### Why two prompts?
+The master prompt is structured in 7 sections that don't contradict each other:
 
-Lovable builds better when it focuses on one layer at a time:
-
-- **Prompt 1** handles structure and content — what's on the page
-- **Prompt 2** handles behavior and materials — how it feels
-
-One mega-prompt overwhelms the system. Two focused prompts compound.
-
-### What makes the Upgrade special?
-
-The Upgrade prompt applies:
-- **Editorial typography** — clamp() fluid sizing, display serifs, mixed weights + italic accents
-- **Glass materials** — backdrop-blur, hairline borders, grain overlays, warm shadows
-- **Motion choreography** — word-by-word reveals, sticky scrub, infinite marquees, magnetic hover, parallax
-- **Edge-to-edge layout** — 12-col CSS grid, no containers, images bleed to viewport
-- **Custom cursor** — blended mix-blend-difference, scales on targets
-- **A11Y** — respects prefers-reduced-motion
+1. **Overview** — Brand positioning + aesthetic direction
+2. **Content** — Real copy for every section (Claude-generated, not placeholder)
+3. **Art Direction** — Typography scale, color palette with roles, layered glass system, texture rules
+4. **Motion Choreography** — Framer Motion only (no GSAP), CSS sticky, word-by-word reveals, infinite marquees
+5. **Brand Assets** — Your logo/images with specific integration instructions (SVG viewBox cropping, inline embedding)
+6. **Hard Constraints** — What NOT to do (no max-w-7xl, no flat cards, no pure white, prefers-reduced-motion)
+7. **Technical Notes** — Stack, font loading, performance
 
 ### What it explicitly forbids (the secret sauce):
 - No `max-w-7xl` centered containers
@@ -86,6 +77,7 @@ The Upgrade prompt applies:
 - No Inter for headlines
 - No generic purple/blue gradients
 - No stock photo aesthetic
+- No GSAP (Framer Motion + CSS only — 50KB less)
 
 ## Examples
 
@@ -94,20 +86,23 @@ The Upgrade prompt applies:
 "A clean energy monitoring platform for building owners"
 ```
 
-### Output (Foundation — excerpt)
-```
-Build a modern, responsive single-page website for GreenFlow...
-Hero headline: "Your building already has the data. We make it useful."
-Primary: #8B6F47, Dark: #1A1714, Light: #F2EEE8
-Fonts: Albert Sans (headlines), Roboto (body)
-```
+### Output (excerpt)
+```markdown
+# GreenFlow — Website Prompt (Awwwards-Level Landing Page)
 
-### Output (Upgrade — excerpt)
-```
-Redesign the entire GreenFlow landing page to feel absolutely cutting edge...
-Word-by-word mask reveal with 80ms stagger, easing [0.16,1,0.3,1]...
-Floating glass-pill navbar, 24px from top, shrinks on scroll...
-Oversized "GREENFLOW" wordmark (clamp(12rem, 25vw, 25rem)) parallaxes up...
+## 1. OVERVIEW
+GreenFlow transforms building energy data into actionable intelligence...
+
+## 3. ART DIRECTION
+### Typography
+- Display/Headlines: Albert Sans (variable weight, italic accents)
+- Body: Roboto
+- Scale: Hero headline: clamp(4rem, 11vw, 11rem)
+
+### Color Palette
+| Token | Value | Role |
+| --accent-primary | #8B6F47 | Primary accent — CTAs, links |
+...
 ```
 
 ## Requirements
@@ -117,7 +112,7 @@ Oversized "GREENFLOW" wordmark (clamp(12rem, 25vw, 25rem)) parallaxes up...
 
 ## How It Works
 
-The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The Foundation prompt is Claude-generated with real copy. The Upgrade prompt is a battle-tested template — the same one that produced [this GreenFlow redesign](https://greenflow-design.lovable.app).
+The brand generation uses Claude to derive positioning, tone, visual direction, and design tokens from your description. The content brief is Claude-generated with real copy. Art direction, motion choreography, and constraints are battle-tested templates — the same ones that produced [this GreenFlow redesign](https://greenflow-design.lovable.app).
 
 ## Credits
 

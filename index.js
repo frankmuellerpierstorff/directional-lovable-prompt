@@ -3,16 +3,16 @@
  * Generate Awwwards-level Lovable.dev website prompts from a brand idea.
  *
  * Usage:
- *   import { generateWebsitePrompts } from 'directional-lovable-prompt';
- *   const result = await generateWebsitePrompts("An app that helps dog owners find vets");
+ *   import { generateWebsitePrompt } from 'directional-lovable-prompt';
+ *   const result = await generateWebsitePrompt("An app that helps dog owners find vets");
  */
 
 import Anthropic from "@anthropic-ai/sdk";
 import {
-  FOUNDATION_SYSTEM,
+  CONTENT_SYSTEM,
   BRAND_GEN_SYSTEM,
-  buildFoundationUserPrompt,
-  buildUpgradePrompt,
+  buildContentUserPrompt,
+  buildMasterPrompt,
 } from "./prompts.js";
 
 const client = new Anthropic();
@@ -31,7 +31,6 @@ export async function generateBrand(description) {
   });
 
   const text = response.content[0].text;
-  // Extract JSON from response
   try { return JSON.parse(text); } catch {}
   const fenced = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
   if (fenced) { try { return JSON.parse(fenced[1].trim()); } catch {} }
@@ -42,44 +41,13 @@ export async function generateBrand(description) {
 }
 
 /**
- * Generate Foundation prompt (Prompt 1) from brand data.
- * This is the first prompt you paste into Lovable.
+ * Generate a single master prompt from brand data.
+ * Claude generates content (headlines, copy, CTAs).
+ * Art direction, motion, constraints are templates with brand tokens injected.
  */
-export async function generateFoundationPrompt(brand) {
-  const userPrompt = buildFoundationUserPrompt(brand);
-
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 5000,
-    temperature: 0.4,
-    system: FOUNDATION_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
-
-  return response.content[0].text;
-}
-
-/**
- * Generate Upgrade prompt (Prompt 2) from brand data.
- * This is the second prompt you paste into Lovable after the foundation is built.
- * No API call needed — it's a template with brand tokens injected.
- */
-export function generateUpgradePrompt(brand) {
-  return buildUpgradePrompt(brand);
-}
-
-/**
- * All-in-one: from a brief description to two Lovable prompts.
- *
- * @param {string} description - Brief description of what you're building
- * @param {object} [overrides] - Optional overrides for brand data (colors, fonts, etc.)
- * @returns {{ brand, foundation, upgrade }}
- */
-export async function generateWebsitePrompts(description, overrides = {}) {
+export async function generateWebsitePrompt(description, overrides = {}) {
   // Step 1: Generate brand from description
   const rawBrand = await generateBrand(description);
-
-  // Apply overrides
   const brand = { ...rawBrand, ...overrides };
 
   // Normalize for prompt builders
@@ -93,9 +61,8 @@ export async function generateWebsitePrompts(description, overrides = {}) {
     audience: brand.audience,
     values: brand.values,
     mission: brand.mission,
-    painsGains: brand.painsGains,
     primaryColor: brand.primaryColor,
-    allColors: [brand.primaryColor, brand.secondaryColor, brand.accentColor].filter(Boolean).join(", "),
+    allColors: [brand.primaryColor, brand.secondaryColor, brand.accentColor, brand.darkColor, brand.lightColor].filter(Boolean).join(", "),
     darkColor: brand.darkColor,
     lightColor: brand.lightColor,
     headlineFont: brand.headlineFont,
@@ -106,11 +73,24 @@ export async function generateWebsitePrompts(description, overrides = {}) {
     materialLanguage: brand.materialLanguage,
   };
 
-  // Step 2: Generate Foundation prompt (Claude call)
-  const foundation = await generateFoundationPrompt(promptBrand);
+  // Step 2: Claude generates content only (headlines, copy, CTAs)
+  const contentResponse = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 3000,
+    temperature: 0.5,
+    system: CONTENT_SYSTEM,
+    messages: [{ role: "user", content: buildContentUserPrompt(promptBrand) }],
+  });
+  const contentBrief = contentResponse.content[0].text;
 
-  // Step 3: Generate Upgrade prompt (template, no API call)
-  const upgrade = generateUpgradePrompt(promptBrand);
+  // Step 3: Assemble master prompt (template + content)
+  const prompt = buildMasterPrompt(promptBrand, contentBrief);
 
-  return { brand, foundation, upgrade };
+  return { brand, prompt };
 }
+
+// Legacy exports for backward compatibility
+export const generateWebsitePrompts = async (description, overrides = {}) => {
+  const { brand, prompt } = await generateWebsitePrompt(description, overrides);
+  return { brand, foundation: prompt, upgrade: "(Merged into single master prompt)" };
+};
